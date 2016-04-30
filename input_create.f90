@@ -10,7 +10,6 @@ program create_input
 
   ! Include our dependant random number generator.
   use rnd_num
-
   implicit none
 
   integer, parameter :: dp=selected_real_kind(15,300)
