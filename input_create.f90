@@ -1,17 +1,22 @@
 program create_input
   !---------------------------------------------!
-  ! This program will create a random MgO/CaO s-!
-  ! plit for a 2X2 unit cell FCC. This will be  !
-  ! used as an input file for CASTEP to calcula-!
-  ! te ground state energies for the percentage  !
-  ! split.                                      !
-  !                                             !
+  ! This program will create a random MgO/CaO s-
+  ! plit for a 2X2 unit cell FCC. This will be  
+  ! used as an input file for CASTEP to calcula-
+  ! te ground state energies for the percentage 
+  ! split.                                      
+  !                                             
   !---------------------------------------------!
+
+  ! Include our dependant random number generator.
+  use rnd_num
+
   implicit none
 
   integer, parameter :: dp=selected_real_kind(15,300)
-  integer :: output_file
-
+  integer :: output_file,i
+  real (kind=dp), dimension(3) :: loc_1,loc_2,loc_3,loc_4
+  real (kind=dp), dimension(4:3) :: locations
   !---------------------------------------------!
   ! Open file that we will output our unit cell
   ! too. Ideally we will read in a parameter file
@@ -37,16 +42,31 @@ program create_input
   ! for the unit cell. We also want to be able to expand the unit cell, and so
   ! need to consider the ability to change the atom locations. 
 
+  ! Firs write the Oxygen atom positions.
   write(output_file,*) '%BLOCK POSITIONS_FRAC'
-  O    0.5000000000    0.5000000000    0.5000000000
-  O    0.5000000000    0.0000000000    0.0000000000
-  O    0.0000000000    0.5000000000    0.0000000000
-  O    0.0000000000    0.0000000000    0.5000000000
-  Mg    0.0000000000    0.0000000000    0.0000000000
-  Mg    0.0000000000    0.5000000000    0.5000000000
-  Mg    0.5000000000    0.0000000000    0.5000000000
-  Mg    0.5000000000    0.5000000000    0.0000000000
-  %ENDBLOCK POSITIONS_FRAC
+  write(output_file,*) 'O    0.5000000000    0.5000000000    0.5000000000'
+  write(output_file,*) 'O    0.5000000000    0.0000000000    0.0000000000'
+  write(output_file,*) 'O    0.0000000000    0.5000000000    0.0000000000'
+  write(output_file,*) 'O    0.0000000000    0.0000000000    0.5000000000'
+
+  ! Set our allowed locations.
+  locations(1,3) = (/0.0000000000,    0.0000000000,    0.0000000000/)
+  locations(2,3) = (/0.0000000000,    0.5000000000,    0.5000000000/)
+  locations(3,3) = (/0.5000000000,    0.0000000000,    0.5000000000/)
+  locations(4,3) = (/0.5000000000,    0.5000000000,    0.0000000000/)
+  ! Next we need to randomise the atoms in the possile positions available. 
+  
+  do i=1,4 
+     print*, rnd()
+     write(output_file,*) 'Mg',locations(i,:)
+  end do
+
+  ! Mg    0.0000000000    0.0000000000    0.0000000000
+  ! Mg    0.0000000000    0.5000000000    0.5000000000
+  ! Mg    0.5000000000    0.0000000000    0.5000000000
+  ! Mg    0.5000000000    0.5000000000    0.0000000000
+
+  write(output_file,*)  '%ENDBLOCK POSITIONS_FRAC'
 
 
   !-------------------------!
