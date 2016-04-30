@@ -10,12 +10,13 @@ program create_input
 
   ! Include our dependant random number generator.
   use rnd_num
+
   implicit none
 
   integer, parameter :: dp=selected_real_kind(15,300)
-  integer :: output_file,i
-  real (kind=dp), dimension(3) :: loc_1,loc_2,loc_3,loc_4
-  real (kind=dp), dimension(4:3) :: locations
+  integer :: output_file,i, Mg,Ca
+  real (kind=dp), dimension(4,3) :: locations
+  real (kind=dp) :: r
   !---------------------------------------------!
   ! Open file that we will output our unit cell
   ! too. Ideally we will read in a parameter file
@@ -48,25 +49,38 @@ program create_input
   write(output_file,*) 'O    0.0000000000    0.5000000000    0.0000000000'
   write(output_file,*) 'O    0.0000000000    0.0000000000    0.5000000000'
 
-  ! Set our allowed locations.
-  locations(1,3) = (/0.0000000000,    0.0000000000,    0.0000000000/)
-  locations(2,3) = (/0.0000000000,    0.5000000000,    0.5000000000/)
-  locations(3,3) = (/0.5000000000,    0.0000000000,    0.5000000000/)
-  locations(4,3) = (/0.5000000000,    0.5000000000,    0.0000000000/)
-  ! Next we need to randomise the atoms in the possile positions available. 
+  ! Set our allowed locations  
+  locations = 0
+
+  locations(2,2) = 0.5_dp
+  locations(2,3) = 0.5_dp
   
+  locations(3,1) = 0.5_dp
+  locations(3,3) = 0.5_dp
+
+  locations(4,1) = 0.5_dp
+  locations(4,2) = 0.5_dp
+
+  ! Next we need to randomise the atoms in the possile positions available.   
+  ! First set our counters to zero
+  Mg = 0
+  Ca = 0
+  ! Then loop over atom positions and randomly assign a Mg/Ca atom.
   do i=1,4 
      print*, rnd()
-     write(output_file,*) 'Mg',locations(i,:)
+     r = rnd()
+     if (r <= 0.5_dp) then
+        write(output_file,*) 'Mg', locations(i,:)
+        Mg = Mg + 1
+     else
+        write(output_file,*) 'Ca', locations(i,:)
+        Ca = Ca + 1
+     end if
   end do
 
-  ! Mg    0.0000000000    0.0000000000    0.0000000000
-  ! Mg    0.0000000000    0.5000000000    0.5000000000
-  ! Mg    0.5000000000    0.0000000000    0.5000000000
-  ! Mg    0.5000000000    0.5000000000    0.0000000000
-
+  Print*, 'Ratio for Ca:', real(Ca,kind=dp)/4.0_dp
   write(output_file,*)  '%ENDBLOCK POSITIONS_FRAC'
-
+  !-----------------------------------!
 
   !-------------------------!
   ! Next output the remaining details.
