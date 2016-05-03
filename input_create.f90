@@ -15,9 +15,8 @@ program create_input
 
   integer, parameter :: dp=selected_real_kind(15,300)
   integer :: output_file,i,j,k,Mg,Ca,atom_kind
-  real (kind=dp), dimension(4,3) :: locations
   integer, dimension(3,3,3) :: cube
-  real (kind=dp) :: r,u,v,w
+  real (kind=dp) :: r,u,v,w,delta
   !---------------------------------------------!
   ! Open file that we will output our unit cell
   ! too. Ideally we will read in a parameter file
@@ -25,30 +24,25 @@ program create_input
   ! are set up (i.e. what k_point_spacing we want).
   !---------------------------------------------!
   output_file = 20
-  open(file='input_file.cell',unit=output_file,status='replace',form='formatted')
+  open(file='MgO.cell',unit=output_file,status='replace',form='formatted')
 
   !-------------------------!
   ! First output the Lattice_cart set-up details.
   !-------------------------!
   write(output_file,*) '%BLOCK LATTICE_CART'
-  write(output_file,*) '4.2000000000    0.0000000000    0.0000000000'
-  write(output_file,*) '0.0000000000    4.2000000000    0.0000000000'
-  write(output_file,*) '0.0000000000    0.0000000000    4.2000000000'
+  write(output_file,*) '   4.2000000000    0.0000000000    0.0000000000'
+  write(output_file,*) '   0.0000000000    4.2000000000    0.0000000000'
+  write(output_file,*) '   0.0000000000    0.0000000000    4.2000000000'
   write(output_file,*) '%ENDBLOCK LATTICE_CART'
+  write(output_file,*) ''
 
   !-------------------------!
   ! Atom positions.
   !-------------------------!
   ! We want to be able to distribute atoms randomly into their allowed locations
   ! for the unit cell. We also want to be able to expand the unit cell, and so
-  ! need to consider the ability to change the atom locations. 
+  ! need to consider the ability to change the atom locations.
 
-  ! Firs write the Oxygen atom positions.
-  write(output_file,*) '%BLOCK POSITIONS_FRAC'
-  write(output_file,*) 'O    0.5000000000    0.5000000000    0.5000000000'
-  write(output_file,*) 'O    0.5000000000    0.0000000000    0.0000000000'
-  write(output_file,*) 'O    0.0000000000    0.5000000000    0.0000000000'
-  write(output_file,*) 'O    0.0000000000    0.0000000000    0.5000000000'
 
   !=========================
   ! SEED ATOM TYPES
@@ -61,7 +55,7 @@ program create_input
   print*, '!===================================!'
   print*, '! Populating cube(3,3,3) with atoms !'
   print*, '!===================================!'
-
+  write(output_file,*) '%BLOCK POSITIONS_FRAC'
   ! Set first atom placed to oxygen
   atom_kind = 1
 
@@ -94,6 +88,8 @@ program create_input
   print*, "!-------------------------!"
   print*, "! Atom, u, v, w           !"
   print*, "!-------------------------!"
+  ! Set the distance between atom vectors
+  delta = 0.25
   ! First set the initial location to origin
   u = 0.0_dp
   v = 0.0_dp
@@ -107,8 +103,8 @@ program create_input
         do i=1,3
            ! Check what type of atom can be placed then write to file.
            if (cube(i,j,k) == 1) then
-              write(output_file,*) 'O',u,v,w
-              print*, 'O',u,v,w
+              write(output_file,*) '   O',u,v,w
+              print*, '   O',u,v,w
            else
               ! Generate random number to be used as a conditional for the
               ! selection of the atom (Mg,Ca). Range [0,1]
@@ -116,40 +112,43 @@ program create_input
               ! Check this random numuber and choose an atom to write
               ! to file. Update the counters for each atom.
               if (r >= 0.5_dp) then
-                 write(output_file,*) 'Mg',u,v,w
-                 print*, 'Mg',u,v,w
+                 write(output_file,*) '   Mg',u,v,w
+                 print*, '   Mg',u,v,w
                  Mg = Mg + 1
               else
-                 write(output_file,*) 'Ca',u,v,w
-                 print*, 'Ca',u,v,w
+                 write(output_file,*) '   Ca',u,v,w
+                 print*, '   Ca',u,v,w
                  Ca = Ca + 1
               end if
            end if
            ! Update u location
-           u = u + 0.5_dp
+           u = u + delta
         end do
         ! Update v location
-        v = v + 0.5_dp
+        v = v + delta
         u = 0.0_dp
      end do
      ! Update w location
-     w = w + 0.5_dp
+     w = w + delta
      v = 0.0_dp
   end do
   write(output_file,*)  '%ENDBLOCK POSITIONS_FRAC'
+  write(output_file,*) ''
   print*, '!-------------------------!'
   !-----------------------------------!
 
+  ! Check the ratio of Ca atoms and output it to the user.
   Print*, 'Ratio for Ca:', real(Ca,kind=dp)/12.0_dp
 
 
   !-------------------------!
   ! Next output the remaining details.
   !-------------------------!
-
-  write(output_file,*) 'kpoints_mp_spacing 3 3 3'
+  write(output_file,*) ''
+  write(output_file,*) 'kpoints_mp_grid 3 3 3'
+  write(output_file,*) ''
   write(output_file,*) 'symmetry_generate'
-
+  write(output_file,*) ''
   write(output_file,*) '%BLOCK CELL_CONSTRAINTS'
   write(output_file,*) '       1       1       1'
   write(output_file,*) '       0       0       0'
