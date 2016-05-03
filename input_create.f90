@@ -1,11 +1,11 @@
 program create_input
   !---------------------------------------------!
   ! This program will create a random MgO/CaO s-
-  ! plit for a 2X2 unit cell FCC. This will be  
+  ! plit for a 2X2 unit cell FCC. This will be
   ! used as an input file for CASTEP to calcula-
-  ! te ground state energies for the percentage 
-  ! split.                                      
-  !                                             
+  ! te ground state energies for the percentage
+  ! split.
+  !
   !---------------------------------------------!
 
   ! Include our dependant random number generator.
@@ -14,8 +14,9 @@ program create_input
   implicit none
 
   integer, parameter :: dp=selected_real_kind(15,300)
-  integer :: output_file,i, Mg,Ca
+  integer :: output_file,i,j,k,Mg,Ca,atom_kind
   real (kind=dp), dimension(4,3) :: locations
+  integer, dimension(3,3,3) :: cube
   real (kind=dp) :: r
   !---------------------------------------------!
   ! Open file that we will output our unit cell
@@ -49,27 +50,54 @@ program create_input
   write(output_file,*) 'O    0.0000000000    0.5000000000    0.0000000000'
   write(output_file,*) 'O    0.0000000000    0.0000000000    0.5000000000'
 
-  ! Set our allowed locations  
+  !=========================
+  ! SEED ATOM TYPES
+  !=========================
+  ! Here we will loop over the cube array and seed what type of atoms can be placed
+  ! in the available locations.
+  ! 1 = O
+  ! 2 = Mg/Ca
+  ! The atom_kind variable will flip sign to alternate atom types can be placed.
+
+  ! Set first atom placed to oxygen
+  atom_kind = 1
+  print*, 'Populating cube(3,3,3) with atoms.'
+  do k=1,3
+     do j=1,3
+        do i=1,3
+           ! Check what type of atom can be placed and update
+           ! the location.
+           if (atom_kind >= 1) then
+              cube(i,j,k) = 1
+           else
+              cube(i,j,k) = 2
+           end if
+           ! Change the kind f atom placed for the next element
+           atom_kind = -atom_kind
+        end do
+     end do
+  end do
+  print*, 'Finished writing CUBE array.'
+
+  ! Set our allowed locations
   locations = 0
 
   locations(2,2) = 0.5_dp
   locations(2,3) = 0.5_dp
-  
+
   locations(3,1) = 0.5_dp
   locations(3,3) = 0.5_dp
 
   locations(4,1) = 0.5_dp
   locations(4,2) = 0.5_dp
 
-  ! Next we need to randomise the atoms in the possile positions available.   
-  ! First set our counters to zero
+  ! Next we need to randomise the atoms in the possile positions available.
+  ! First set our counters to zero.
   Mg = 0
   Ca = 0
   ! Then loop over atom positions and randomly assign a Mg/Ca atom.
-  do i=1,4 
-     print*, rnd()
-     r = rnd()
-     if (r <= 0.5_dp) then
+  do i=1,4
+     if (rnd() <= 0.5_dp) then
         write(output_file,*) 'Mg', locations(i,:)
         Mg = Mg + 1
      else
@@ -82,12 +110,12 @@ program create_input
   write(output_file,*)  '%ENDBLOCK POSITIONS_FRAC'
   !-----------------------------------!
 
+
   !-------------------------!
   ! Next output the remaining details.
   !-------------------------!
 
   write(output_file,*) 'kpoints_mp_spacing 3 3 3'
-
   write(output_file,*) 'symmetry_generate'
 
   write(output_file,*) '%BLOCK CELL_CONSTRAINTS'
