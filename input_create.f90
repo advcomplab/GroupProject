@@ -58,10 +58,13 @@ program create_input
   ! 1 = O
   ! 2 = Mg/Ca
   ! The atom_kind variable will flip sign to alternate atom types can be placed.
+  print*, '!===================================!'
+  print*, '! Populating cube(3,3,3) with atoms !'
+  print*, '!===================================!'
 
   ! Set first atom placed to oxygen
   atom_kind = 1
-  print*, 'Populating cube(3,3,3) with atoms.'
+
   do k=1,3
      do j=1,3
         do i=1,3
@@ -78,6 +81,7 @@ program create_input
      end do
   end do
   print*, 'Finished writing CUBE array.'
+  print*, '!-------------------------!'
 
   !=========================
   ! WRITE ATOMS
@@ -85,19 +89,41 @@ program create_input
   ! Here we will use the seeded cube to write out the atoms and their location
   ! vectors within the cube (u,v,w).
   !-------------------------
+  print*, "!=========================!"
+  print*, "! Writing atoms...        !"
+  print*, "!-------------------------!"
+  print*, "! Atom, u, v, w           !"
+  print*, "!-------------------------!"
   ! First set the initial location to origin
   u = 0.0_dp
   v = 0.0_dp
   w = 0.0_dp
+  ! and the atom type counters to zero
+  Mg = 0
+  Ca = 0
   ! Then loop over all locations and write the atom to the file.
   do k=1,3
      do j=1,3
         do i=1,3
            ! Check what type of atom can be placed then write to file.
            if (cube(i,j,k) == 1) then
+              write(output_file,*) 'O',u,v,w
               print*, 'O',u,v,w
            else
-              print*, 'Mg',u,v,w
+              ! Generate random number to be used as a conditional for the
+              ! selection of the atom (Mg,Ca). Range [0,1]
+              r = rnd()
+              ! Check this random numuber and choose an atom to write
+              ! to file. Update the counters for each atom.
+              if (r >= 0.5_dp) then
+                 write(output_file,*) 'Mg',u,v,w
+                 print*, 'Mg',u,v,w
+                 Mg = Mg + 1
+              else
+                 write(output_file,*) 'Ca',u,v,w
+                 print*, 'Ca',u,v,w
+                 Ca = Ca + 1
+              end if
            end if
            ! Update u location
            u = u + 0.5_dp
@@ -110,39 +136,11 @@ program create_input
      w = w + 0.5_dp
      v = 0.0_dp
   end do
-
-
-
-  ! Set our allowed locations
-  locations = 0
-
-  locations(2,2) = 0.5_dp
-  locations(2,3) = 0.5_dp
-
-  locations(3,1) = 0.5_dp
-  locations(3,3) = 0.5_dp
-
-  locations(4,1) = 0.5_dp
-  locations(4,2) = 0.5_dp
-
-  ! Next we need to randomise the atoms in the possile positions available.
-  ! First set our counters to zero.
-  Mg = 0
-  Ca = 0
-  ! Then loop over atom positions and randomly assign a Mg/Ca atom.
-  do i=1,4
-     if (rnd() <= 0.5_dp) then
-        write(output_file,*) 'Mg', locations(i,:)
-        Mg = Mg + 1
-     else
-        write(output_file,*) 'Ca', locations(i,:)
-        Ca = Ca + 1
-     end if
-  end do
-
-  Print*, 'Ratio for Ca:', real(Ca,kind=dp)/4.0_dp
   write(output_file,*)  '%ENDBLOCK POSITIONS_FRAC'
+  print*, '!-------------------------!'
   !-----------------------------------!
+
+  Print*, 'Ratio for Ca:', real(Ca,kind=dp)/12.0_dp
 
 
   !-------------------------!
