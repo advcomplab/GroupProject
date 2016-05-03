@@ -17,7 +17,7 @@ program create_input
   integer :: output_file,i,j,k,Mg,Ca,atom_kind
   real (kind=dp), dimension(4,3) :: locations
   integer, dimension(3,3,3) :: cube
-  real (kind=dp) :: r
+  real (kind=dp) :: r,u,v,w
   !---------------------------------------------!
   ! Open file that we will output our unit cell
   ! too. Ideally we will read in a parameter file
@@ -78,6 +78,40 @@ program create_input
      end do
   end do
   print*, 'Finished writing CUBE array.'
+
+  !=========================
+  ! WRITE ATOMS
+  !=========================
+  ! Here we will use the seeded cube to write out the atoms and their location
+  ! vectors within the cube (u,v,w).
+  !-------------------------
+  ! First set the initial location to origin
+  u = 0.0_dp
+  v = 0.0_dp
+  w = 0.0_dp
+  ! Then loop over all locations and write the atom to the file.
+  do k=1,3
+     do j=1,3
+        do i=1,3
+           ! Check what type of atom can be placed then write to file.
+           if (cube(i,j,k) == 1) then
+              print*, 'O',u,v,w
+           else
+              print*, 'Mg',u,v,w
+           end if
+           ! Update u location
+           u = u + 0.5_dp
+        end do
+        ! Update v location
+        v = v + 0.5_dp
+        u = 0.0_dp
+     end do
+     ! Update w location
+     w = w + 0.5_dp
+     v = 0.0_dp
+  end do
+
+
 
   ! Set our allowed locations
   locations = 0
