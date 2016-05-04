@@ -1,0 +1,7 @@
+You must have castep.mpi, a parameter and cell file present in the same directory that you execute this script. You will need to use the VPN is you are remote to the uni network.
+
+Use chumod +X to give thefile execute permissions, then run by entering the command:
+
+    qsub run_castep MgO
+
+Use qstat to check progress of the simulation.
