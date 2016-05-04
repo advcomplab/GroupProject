@@ -1,0 +1,55 @@
+!=================================================================!
+!                   AdvCompLab - Group Project:                   !
+!             INTERACTION SIMULATION OF MgO AND CaO.              !
+!=================================================================!
+! A users guide for the tools created for this project.           !
+! Created by:                                                     !
+!=================================================================!
+!
+!  Section 1 - Unit cell creation/Initialisation
+!            a) code
+             a) use
+!  
+!  Section 2 - Computer modelling
+!
+!  Section 3 - Analysis and Visualisation 
+!
+!
+!=================================================================!
+!                          SECTION 1  (Aaron)                     ! 
+!=================================================================!
+ a) Code  
+                                                       
+!-----------------------------------------------------------------!
+Source Code:  rnd_num.f90
+Dependencies: None
+Language:     Fortran 95
+!-----------------------------------------------------------------!
+This module contains a function and a subroutine:
+
+     + - rnd(): Function that returns a random number in the range [0,1] (real,kind=dp).  
+
+     + - init_random_seed(): Subroutine taken from the GNU Fortran example: (https://gcc.gnu.org/onlinedocs/gfortran/RANDOM_005fSEED.html) and seeds the andom number generator. It must be called at some point in the code BEFORE rnd() is executed.
+
+
+!-----------------------------------------------------------------!
+Sorce Code:   input_create.f90
+Dependencies: rnd_num.f90
+Language:     Fortran 95
+!-----------------------------------------------------------------!
+This is the main program for the unit cell creation. The user is asked to input:
+
+	+ - The percentage of desired Ca.
+
+	+ - The kpoint_mp_spacing value (Discussed later).
+
+The code first generates an array with dimensions 3x3x3, then assigns an integer to each lattice point
+
+!=================================================================!
+!                          SECTION 2                              ! 
+!=================================================================!
+
+!=================================================================!
+!                          SECTION 3                              ! 
+!=================================================================!
+
