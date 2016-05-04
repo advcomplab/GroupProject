@@ -6,8 +6,13 @@
 x=200
 
 
+
+echo '#Cut-off Energy' 'Final Energy'> finalE.dat
+
 while [ $x -le 550 ]
 do
+
+#Writes the parameters for the particular cut-off energy value
 
 echo "comment            : MgO
 task               : SinglePoint
@@ -34,14 +39,26 @@ mixing_scheme      : pulay
 smearing_width     : 0.2
 mix_history_length : 30" > MgO.param
 
-mpirun -np 1 castep.mpi MgO &
+mpirun -np 1 castep.mpi MgO
 
+#Gets the number of the the line which has the final calculated energy
 
+line=$(grep -n "Total energy corrected" "MgO.castep" | cut -d : -f 1 | tail -1)
 
-echo "$x     " "grep 'Final energy, E" MgO.castep
+#Grabs the energy value
 
-x=x+50
+energy=$(awk 'FNR == '$line' {print $9}' 'MgO.castep')
 
+echo 'line=' $line
+echo $x
+
+#Writes data out to file
+
+echo $x "          " $energy >> finalE.dat
+
+#Iterates the cut-off energy
+
+x=`expr $x + 50`
 
 
 done
