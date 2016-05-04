@@ -14,11 +14,13 @@
 !
 !  Section 3 - Analysis and Visualisation 
 !
+!  Section 4 - TODO
 !
 !=================================================================!
 !                          SECTION 1  (Aaron)                     ! 
 !=================================================================!
- a) Code  
+
+a) Code
                                                        
 !-----------------------------------------------------------------!
 Source Code:  rnd_num.f90
@@ -39,11 +41,37 @@ Language:     Fortran 95
 !-----------------------------------------------------------------!
 This is the main program for the unit cell creation. The user is asked to input:
 
-	+ - The percentage of desired Ca.
+	+ - The percentage of desired Ca [0,1].
 
 	+ - The kpoint_mp_spacing value (Discussed later).
 
-The code first generates an array with dimensions 3x3x3, then assigns an integer to each lattice point
+The code operates as follows:
+
+The code first generates an array with dimensions 3x3x3, then assigns an integer to each lattice point. The values of the integer assigned can take two values, each representing a atom_kind (i.e. what type of atom is allowed to be placed at the location): 1 represents Oxygen, 2 represents MgO or CaO. The final array will have an atomic model of a rocksalt crystal.
+
+Then the atoms vector locations (u,v,w) are written to file. The code then loops over all elements, checking their integer value. If the element value is 2 the code then uses the rnd() function to choose an atom at random (either Mg,Ca). The probability of this is controlled by a conditional the user entered for desired percentage (p). The code initially places an oxygen atom at the (0,0,0) location, then as each atom is placed, it updates the u,v,w coordinates for atoms being placed (by a distance delta).
+
+The final output is a .cell file that can be immediately processed by CASTEP.
+
+b) Using the code
+
+The user must have input_file.f90 and rnd_num.f90 in the same directory. The code can be compiled with the command:
+
+    gfortran rnd_num.f90 input_creator.f90 -Wall -march=native
+
+The executable a.out will be produced. This can be given execute permission by issuing the command:
+
+    chmod +X a.out
+
+The executable can be run by typing:
+
+    ./a.out
+
+and will then be prompted to enter a value for the desired percentage of Ca. The value entered must be within the range [0,1]. This value is used in a conditional to test when placing a Mg/Ca atom at a vector location - it will not necessarily be exact once the cell is generated; the Ca % is written the screen once the code has executed and should be compared to the desired value.
+
+The user is then asked to input a value for kpoints_mp_spacing. This can be thought of as the dx in numerical integration. It can be varied to find an accurate convergence value, while still being computationally cheap. A value of 1 or below is desirable.
+
+Once completed the MgO.cell file will e ready for use in CASTEP.
 
 !=================================================================!
 !                          SECTION 2                              ! 

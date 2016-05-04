@@ -1,12 +1,17 @@
+! Dependencies: rnd_num.f90. Std: F95                             !
+!#################################################################!
+!              CASTEP INPUT FILE (.cell) GENERATOR                !
+!#################################################################!
+!
+! This program creates a MgO.cell input file for use in CASTEP
+! calculating the ground state energies for various percentages
+! of MgO/CaO in a rocksalt crystal structure.
+!
+! See DOCUMENTATION.txt for user installation/useage guide.
+!_________________________________________________________________!
+! Created by Aaron Long                                           !
+!#################################################################!
 program create_input
-  !---------------------------------------------!
-  ! This program will create a random MgO/CaO s-
-  ! plit for a 2X2 unit cell FCC. This will be
-  ! used as an input file for CASTEP to calcula-
-  ! te ground state energies for the percentage
-  ! split.
-  !
-  !---------------------------------------------!
 
   ! Include our dependant random number generator.
   use rnd_num
@@ -17,18 +22,18 @@ program create_input
   integer :: output_file,i,j,k,Mg,Ca,atom_kind,seed
   integer, dimension(3,3,3) :: cube
   real (kind=dp) :: r,u,v,w,delta,p,spacing
-  !---------------------------------------------!
-  ! Open file that we will output our unit cell
-  ! too. Ideally we will read in a parameter file
-  ! that will contain details about how other elements
-  ! are set up (i.e. what k_point_spacing we want).
-  !---------------------------------------------!
+  !-----------------------------------------------------------------!
+  ! Open file that we will output our unit cell to. Ideally we will
+  ! read in a parameter file that will contain details about how
+  ! other elements are set up (i.e. what k_point_spacing we want).
+  !-----------------------------------------------------------------!
   output_file = 20
   open(file='MgO.cell',unit=output_file,status='replace',form='formatted')
 
 
   ! Seed rnd() by initialising a pseudo-random number sequence.
   call init_random_seed()
+  ! Ask the user for various parameters.
   print*, '!=============================================!'
   print*, '! Enter a percentage for the desired Ca       !'
   print*, '!=============================================!'
@@ -55,7 +60,6 @@ program create_input
   ! We want to be able to distribute atoms randomly into their allowed locations
   ! for the unit cell. We also want to be able to expand the unit cell, and so
   ! need to consider the ability to change the atom locations.
-
 
   !=========================
   ! SEED ATOM TYPES
