@@ -16,7 +16,7 @@ program create_input
   integer, parameter :: dp=selected_real_kind(15,300)
   integer :: output_file,i,j,k,Mg,Ca,atom_kind,seed
   integer, dimension(3,3,3) :: cube
-  real (kind=dp) :: r,u,v,w,delta
+  real (kind=dp) :: r,u,v,w,delta,p
   !---------------------------------------------!
   ! Open file that we will output our unit cell
   ! too. Ideally we will read in a parameter file
@@ -27,8 +27,13 @@ program create_input
   open(file='MgO.cell',unit=output_file,status='replace',form='formatted')
 
 
-  ! Seed rnd()
+  ! Seed rnd() by initialising a pseudo-random number sequence.
   call init_random_seed()
+  print*, '!=============================================!'
+  print*, '! Enter a percentage for the desired Ca       !'
+  print*, '!=============================================!'
+  read(*,*) p
+  print*, 'Thanks. Running for this percentage - you might need to run a few times to get the desired split'
 
   !-------------------------!
   ! First output the Lattice_cart set-up details.
@@ -56,9 +61,9 @@ program create_input
   ! 1 = O
   ! 2 = Mg/Ca
   ! The atom_kind variable will flip sign to alternate atom types can be placed.
-  print*, '!===================================!'
-  print*, '! Populating cube(3,3,3) with atoms !'
-  print*, '!===================================!'
+  print*, '!=============================================!'
+  print*, '! Populating cube(3,3,3) with atoms           !'
+  print*, '!=============================================!'
   write(output_file,*) '%BLOCK POSITIONS_FRAC'
   ! Set first atom placed to oxygen
   atom_kind = 1
@@ -79,7 +84,7 @@ program create_input
      end do
   end do
   print*, 'Finished writing CUBE array.'
-  print*, '!-------------------------!'
+  print*, '!---------------------------------------------!'
 
   !=========================
   ! WRITE ATOMS
@@ -87,11 +92,11 @@ program create_input
   ! Here we will use the seeded cube to write out the atoms and their location
   ! vectors within the cube (u,v,w).
   !-------------------------
-  print*, "!=========================!"
-  print*, "! Writing atoms...        !"
-  print*, "!-------------------------!"
-  print*, "! Atom, u, v, w           !"
-  print*, "!-------------------------!"
+  print*, "!=============================================!"
+  print*, "! Writing atoms...                            !"
+  print*, "!---------------------------------------------!"
+  print*, "! Output: Atom_type, u, v, w                  !"
+  print*, "!---------------------------------------------!"
   ! Set the distance between atom vectors
   delta = 0.25
   ! First set the initial location to origin
@@ -115,14 +120,14 @@ program create_input
               r = rnd()
               ! Check this random numuber and choose an atom to write
               ! to file. Update the counters for each atom.
-              if (r >= 0.5_dp) then
-                 write(output_file,*) '   Mg',u,v,w
-                 print*, '   Mg',u,v,w
-                 Mg = Mg + 1
-              else
+              if (r <= p) then
                  write(output_file,*) '   Ca',u,v,w
                  print*, '   Ca',u,v,w
                  Ca = Ca + 1
+              else
+                 write(output_file,*) '   Mg',u,v,w
+                 print*, '   Mg',u,v,w
+                 Mg = Mg + 1
               end if
            end if
            ! Update u location
@@ -138,13 +143,13 @@ program create_input
   end do
   write(output_file,*)  '%ENDBLOCK POSITIONS_FRAC'
   write(output_file,*) ''
-  print*, '!-------------------------!'
+  print*, '!---------------------------------------------!'
   !-----------------------------------!
 
   ! Check the ratio of Ca atoms and output it to the user.
-  Print*, 'Ratio for Ca:', real(Ca,kind=dp)/12.0_dp
+  Print*, 'PERCENTAGE OF Ca IN UNIT CELL =', real(Ca,kind=dp)/15.0_dp
+  print*, '!---------------------------------------------!'
 
-  print*, 'system_clock:', seed
   !-------------------------!
   ! Next output the remaining details.
   !-------------------------!
@@ -171,5 +176,7 @@ program create_input
   !      Mg  Mg_OTF.usp
   !      Ca  Ca_OTF.usp
   !%ENDBLOCK SPECIES_POT
+
+  print*, 'Finished writing input file: MgO.cell.'
 
 end program create_input

@@ -25,13 +25,13 @@ module rnd_num
       call random_number(rnd)
     end function rnd
 
-	subroutine init_random_seed()
+    subroutine init_random_seed()
             use iso_fortran_env, only: int64
             implicit none
             integer, allocatable :: seed(:)
             integer :: i, n, un, istat, dt(8), pid
             integer(int64) :: t
-          
+
             call random_seed(size = n)
             allocate(seed(n))
             ! First try if the OS provides a random number generator
@@ -75,6 +75,6 @@ module rnd_num
               s = mod(s * 279470273_int64, 4294967291_int64)
               lcg = int(mod(s, int(huge(0), int64)), kind(0))
             end function lcg
-          end subroutine init_random_seed
+    end subroutine init_random_seed
 
 end module rnd_num
