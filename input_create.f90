@@ -38,7 +38,7 @@ program create_input
   print*, '! Enter a value for kpoint_mp_spacing (eg:1)  !'
   print*, '!=============================================!'
   read(*,*) spacing
-  
+
   !-------------------------!
   ! First output the Lattice_cart set-up details.
   !-------------------------!
