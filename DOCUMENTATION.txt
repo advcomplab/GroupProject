@@ -77,6 +77,15 @@ Once completed the MgO.cell file will e ready for use in CASTEP.
 !                          SECTION 2                              ! 
 !=================================================================!
 
+!-----------------------------------------------------------------!
+Source Code:  cutoff.sh
+Dependencies: None
+Language:     Bash
+!-----------------------------------------------------------------!
+This shell script must be in the same directory as castep.mpi and an MgO.cell file.
+
+It will then run print out a MgO.param file with an initial cut-off energy of 200. It will then run CASTEP for that parameter file and then using grep and awk, output the cut-off energy and the final calculated ground-state energy to a data file named finalE.dat. This process is in a do loop and will iterate for cut-off energies in the range 200-550eV.
+
 !=================================================================!
 !                          SECTION 3                              ! 
 !=================================================================!
