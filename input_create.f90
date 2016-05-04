@@ -14,7 +14,7 @@ program create_input
   implicit none
 
   integer, parameter :: dp=selected_real_kind(15,300)
-  integer :: output_file,i,j,k,Mg,Ca,atom_kind
+  integer :: output_file,i,j,k,Mg,Ca,atom_kind,seed
   integer, dimension(3,3,3) :: cube
   real (kind=dp) :: r,u,v,w,delta
   !---------------------------------------------!
@@ -25,6 +25,10 @@ program create_input
   !---------------------------------------------!
   output_file = 20
   open(file='MgO.cell',unit=output_file,status='replace',form='formatted')
+
+
+  ! Seed rnd()
+  call init_random_seed()
 
   !-------------------------!
   ! First output the Lattice_cart set-up details.
@@ -140,7 +144,7 @@ program create_input
   ! Check the ratio of Ca atoms and output it to the user.
   Print*, 'Ratio for Ca:', real(Ca,kind=dp)/12.0_dp
 
-
+  print*, 'system_clock:', seed
   !-------------------------!
   ! Next output the remaining details.
   !-------------------------!
