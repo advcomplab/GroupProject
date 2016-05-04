@@ -16,7 +16,7 @@ program create_input
   integer, parameter :: dp=selected_real_kind(15,300)
   integer :: output_file,i,j,k,Mg,Ca,atom_kind,seed
   integer, dimension(3,3,3) :: cube
-  real (kind=dp) :: r,u,v,w,delta,p
+  real (kind=dp) :: r,u,v,w,delta,p,spacing
   !---------------------------------------------!
   ! Open file that we will output our unit cell
   ! too. Ideally we will read in a parameter file
@@ -33,8 +33,12 @@ program create_input
   print*, '! Enter a percentage for the desired Ca       !'
   print*, '!=============================================!'
   read(*,*) p
-  print*, 'Thanks. Running for this percentage - you might need to run a few times to get the desired split'
-
+  print*, 'Running for this percentage - you might need to run a few times to get the desired split'
+  print*, '!=============================================!'
+  print*, '! Enter a value for kpoint_mp_spacing (eg:1)  !'
+  print*, '!=============================================!'
+  read(*,*) spacing
+  
   !-------------------------!
   ! First output the Lattice_cart set-up details.
   !-------------------------!
@@ -154,7 +158,7 @@ program create_input
   ! Next output the remaining details.
   !-------------------------!
   write(output_file,*) ''
-  write(output_file,*) 'kpoints_mp_grid 3 3 3'
+  write(output_file,*) 'kpoints_mp_spacing',spacing
   write(output_file,*) ''
   write(output_file,*) 'symmetry_generate'
   write(output_file,*) ''
