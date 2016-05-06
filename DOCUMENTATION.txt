@@ -87,6 +87,16 @@ This shell script must be in the same directory as castep.mpi and an MgO.cell fi
 It will then run print out a MgO.param file with an initial cut-off energy of 200. It will then run CASTEP for that parameter file and then using grep and awk, output the cut-off energy and the final calculated ground-state energy to a data file named finalE.dat. This process is in a do loop and will iterate for cut-off energies in the range 200-550eV.
 
 !=================================================================!
-!                          SECTION 3                              ! 
+!                          SECTION 3   (Ryan)                     ! 
 !=================================================================!
+!-----------------------------------------------------------------!
+Source Code:  run_visualize.sh
+Dependencies: Visualize_Cell.py - Language: Python
+Language:     Bash
+!-----------------------------------------------------------------!
+This shell script must be in the same directory as Visualize_Cell.py and all MgO$.cell files where $ represents the number of Ca atoms replacing Mg atoms.
+
+This shell script is currently set to run for the results specific to this experiment. This script will feed the file name to Visualize_Cell.py which is based on the python code provided at the start of this experiment of the same name. Creates a 3D image of the unit cell using the visual library and the information in the .cell file being read. The only current known method for writing this image to file is to screen shot that window. Automation of the screen shot was attempted using the PyQt4 module. This method was found to be the most simple to implement but may only be used reliably in Linux system, some cases this method may be successful in Windows. 
+
+This method was intialy tested before addition to Visualize_Cell.py and was proven to take screen shot as intended. Once incorperated into Visualize_Cell.py multiple errors occured causing the vpython window and then the Visualize_Cell.py program to stop responding. This issue is currently unresolved, the code has been left in as comments for future attempts to resolve the issue.
 
