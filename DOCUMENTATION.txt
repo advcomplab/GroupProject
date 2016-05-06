@@ -3,7 +3,7 @@
 !             INTERACTION SIMULATION OF MgO AND CaO.              !
 !=================================================================!
 ! A users guide for the tools created for this project.           !
-! Created by:                                                     !
+! Created by: Group 3 - Aaron  Sean  Ryan                         !
 !=================================================================!
 !
 !  Section 1 - Unit cell creation/Initialisation
@@ -13,8 +13,6 @@
 !  Section 2 - Computer modelling
 !
 !  Section 3 - Analysis and Visualisation 
-!
-!  Section 4 - TODO
 !
 !=================================================================!
 !                          SECTION 1  (Aaron)                     ! 
@@ -94,9 +92,229 @@ Source Code:  run_visualize.sh
 Dependencies: Visualize_Cell.py - Language: Python
 Language:     Bash
 !-----------------------------------------------------------------!
-This shell script must be in the same directory as Visualize_Cell.py and all MgO$.cell files where $ represents the number of Ca atoms replacing Mg atoms.
+This shell script must be in the same directory as Visualize_Cell.py and all MgO$.cell files where $ represents the number of Ca atoms replacing Mg atoms. This must have permision to run as executable.
 
 This shell script is currently set to run for the results specific to this experiment. This script will feed the file name to Visualize_Cell.py which is based on the python code provided at the start of this experiment of the same name. Creates a 3D image of the unit cell using the visual library and the information in the .cell file being read. The only current known method for writing this image to file is to screen shot that window. Automation of the screen shot was attempted using the PyQt4 module. This method was found to be the most simple to implement but may only be used reliably in Linux system, some cases this method may be successful in Windows. 
 
 This method was intialy tested before addition to Visualize_Cell.py and was proven to take screen shot as intended. Once incorperated into Visualize_Cell.py multiple errors occured causing the vpython window and then the Visualize_Cell.py program to stop responding. This issue is currently unresolved, the code has been left in as comments for future attempts to resolve the issue.
 
+!-----------------------------------------------------------------!
+Source Code:  convex.sh
+Dependencies: find_convex_hull.py,gnuplot
+Language:     Bash
+!-----------------------------------------------------------------!
+Must be in same directory as find_convex_hull.py and all the results files ending in .castep. Requires same numbering scheme as that for run_visualize.sh . Currently set for the specific number of results from this experiment but may be changed to work with any future additions to the results. Produces plot of the Convex hull of the formation energy as well as the raw output for converged energy from the .castep results.
+
+
+!-----------------------------------------------------------------!
+Source Code:  find_convex_hull.py
+Dependencies: final_energy.dat
+Language:     python
+!-----------------------------------------------------------------!
+Must be in same directory as final_energy.dat produced by convex.sh . Produces an output file convex_hull.dat which may then be plotted using gnuplot to show the convex hull for the input data. The method used to determine the convex hull and the reading and writing of data all work as intended and have been tested. 
+The Formation energy calculation DOES NOT WORK as it should. This means that the convex hull cannot be produced. It is most likely that the way in which the values of energy for single MgO and CaO are calculated and then the formation energy from this. This should be addressed as soon as possible. 
+Due to the time taken attempting to correct the calculation of Formation energy there was insufficient time to implement the writing to file of the full set of formation energy of all points which can be ammended by simply opening up another output file and then writing the list of formation energy values to file in the same manner as the points which form the convex hull.
+The other intended feature of writing to file the values which are within 'experimental blur' error of the convex hull to a seperate file to overlay on the same plot of the convex hull has not been implemented as a method to ensure their proximity to the hull was not determined. 
+!-----------------------------------------------------------------!
+Code For Section 3
+!-----------------------------------------------------------------!
+!------------------------run_visualize.sh-------------------------!
+#!/bin/bash
+
+for count in 1 2 3 4 5 6 7 8 9 10 11 12 13
+
+do
+   echo 'MgO'${count}'.cell' | python Visualize_Cell.py
+
+done
+!---------------------Visualize_Cell.py---------------------------!
+#!/usr/bin/python
+import visual
+#import sys
+#from PyQt4.QtGui import QPixmap, QApplication
+
+########## Code supplied by Phil Hasnip for Year 3 Term 3 lab experiment
+#  Modified by Ryan Pound
+#  Produces 3D image of the unit cell of supplied cell file, colour coding
+#  and scaling atoms. Code for auto capturing print screen commented out
+#  see README for more details
+
+elementName = [ "Mg", "Ca", "O" ]
+ 
+class atom:
+    def __init__(self,name,v,atom_radius):
+        self.name = name
+        self.position = v
+        #set the colour of the atoms dependant on their element
+        if name == "Mg":
+            self.pic = visual.sphere(pos=self.position,radius=atom_radius,color=visual.color.orange)
+        elif name == "Ca":
+            self.pic = visual.sphere(pos=self.position,radius=atom_radius,color=visual.color.red)
+        elif name == "O":
+            self.pic = visual.sphere(pos=self.position,radius=atom_radius,color=visual.color.blue)
+        else:
+            self.pic = visual.sphere(pos=self.position,radius=atom_radius,color=visual.color.white)
+
+
+# Create the empty list myAtoms
+myAtoms = []
+
+# Create the empty list fracPos
+fracPos = []
+
+lattice = []
+
+# Get the fractional coordinates and lattice from the CASTEP input cell file
+cell_file = raw_input()
+with open(cell_file, "r") as inputFile:
+
+    inPosBlock = False
+    inLatticeBlock = False
+
+    for line in inputFile:
+        if inPosBlock:
+            if line.lower() == "%endblock positions_frac\n":
+                inPosBlock = False
+            else:
+                name, x, y, z= line.split()
+                fracPos.append([name,x,y,z])
+
+        if inLatticeBlock:
+            if line.lower() == "%endblock lattice_cart\n":
+                inLatticeBlock = False
+            else:
+                x,y,z = line.split()
+                lattice.append(visual.vector(float(x),float(y),float(z)))
+
+        if line.lower() == "%block lattice_cart\n":
+            inLatticeBlock = True
+
+        if line.lower() == "%block positions_frac\n":
+            inPosBlock = True
+
+inputFile.close()
+atom_display = visual.display(title=cell_file)
+
+# Draw the lattice vectors
+for a in lattice:
+    visual.arrow(pos=visual.vector(0.0,0.0,0.0),axis=a,shaftwidth=0.01)
+# ensure that the atoms will always match the size of the cell
+atom_radius = 4.0 / len(fracPos)
+
+for a in fracPos:
+    absPos = visual.vector(0.0,0.0,0.0)
+    # Convert to absolute, Cartesian co-ordinates
+    for i in [ 0, 1, 2 ]:
+        absPos = absPos + float(a[i+1])*lattice[i]
+    # Add to displayed atoms
+    myAtoms.append(atom(a[0],absPos,atom_radius))
+    
+########## code to show the atom bonds
+#  - this has been removed because the size of the cells results in it not 
+#    clearly showing the unit cell. Can be erqorked in the future
+#bonds = []
+#for a in myAtoms:
+#    for b in myAtoms:
+#        if abs(a.position - b.position)<5.0:
+#            bonds.append(visual.cylinder(pos=a.position,axis=(b.position-a.position),radius=0.01,color=visual.color.white))
+
+########## 
+print "Image of cell described by ", cell_file
+print "Key: Mg - orange, Ca - red, O - blue"
+
+########## Screen shot code has been shown to work but hasn't worked in this for some reason
+#app = QApplication(sys.argv)
+#QPixmap.grabWindow(QApplication.desktop().winId()).save('test.png', 'png')
+!-------------------convex.sh-------------------------------------!
+#!/bin/bash
+
+resultfile=final_energy.dat
+percentage=0
+
+for count in 0 1 2 3 4 5 6 7 8 9 10 11 12 13
+
+do
+   a=$(grep 'Total energy corrected for finite basis set' MgO${count}.castep | awk '{split($0,results,"="); print results[2]}' | awk '{ gsub(/eV/, ""); print }' )
+   percentage=$(bc -l <<< ${count}'/13*100')
+   echo "$percentage $a" >> "$resultfile"
+done
+
+python find_convex_hull.py
+
+gnuplot -persist <<-EOFMarker
+    set term png
+    unset key
+    set output "Convex_Hull.png"
+    set title "Convex Hull of Formation Energy of MgO and CaO"
+    set ylabel "Formation Energy [eV]"
+    set xlabel "Percentage of CaO in the unit cell"
+    plot "convex_hull.dat" with linespoints
+
+    set output "Converged_Energy.png"
+    set title "Converged Energy of MgO and CaO From Castep"
+    set ylabel "Converged Ground State Energy [eV]"
+    set xlabel "Percentage of CaO in the unit cell"
+    plot "final_energy.dat" with linespoints
+EOFMarker
+!---------------------find_convex_hull.py-------------------------!
+import numpy
+
+percentage = []
+energy = []
+
+for line in open('final_energy.dat','r'):
+   li=line.strip()
+   if not li.startswith("#"):
+      #break apart the line of the data entry from the file
+      data_points = li.split()
+     # for time 0, temp 1, KE 2, PE 3, Total E 4, Pressure 6
+      percentage.append(float(data_points[0]))
+      energy.append(float(data_points[1]))
+
+max_loop = len(percentage)
+#calculate the formation energy
+#-first step to caluculate the value of pure MgO and CaO 
+pure_MgO = energy[0]/(max_loop - 1)
+pure_CaO = energy[max_loop-1]/(max_loop - 1)
+#now set the values to the formation energy
+for num_CaO in range(0,max_loop):
+    energy[num_CaO] = energy[num_CaO] - ((max_loop - 1 - num_CaO) * pure_MgO) - (num_CaO * pure_CaO)
+#set up empty lists to hold the points of the hull
+
+hull_E = []
+hull_P = []
+#add the starting points to the respective lists
+hull_P.append(percentage[0])
+hull_E.append(energy[0])
+previous = 0
+for current_row in range(0,max_loop):
+   best_grad = 0
+   best_row = 0
+   for compared_row in range(current_row+1,max_loop):
+      #find the coefficients of the straight line joining the two points being looked at
+      x = [percentage[current_row],percentage[compared_row]]
+      y = [energy[current_row],energy[compared_row]]
+      coefficients = numpy.polyfit(x,y,1)
+      #print percentage[current_row],percentage[compared_row], coefficients
+      #checks if this is the first gradient calculated for this row or this gradient is steeper 
+      if percentage[compared_row] > previous:
+         if best_grad == 0:
+            best_row = compared_row
+            best_grad = coefficients[0]
+         elif coefficients[0] < best_grad:
+            best_row = compared_row
+            best_grad = coefficients[0]
+        
+   #at this point the best line for the step in the convex hull has been found
+   if best_row != 0:
+      hull_P.append(percentage[best_row])
+      hull_E.append(energy[best_row])
+      previous = percentage[best_row]
+      
+convex_hull = open('convex_hull.dat', 'w')
+count = len(hull_P)
+for count in range(0,count):
+  convex_hull.write("\n")
+  convex_hull.write(str(hull_P[count]))
+  convex_hull.write('   ')
+  convex_hull.write(str(hull_E[count]))
